@@ -1,3 +1,4 @@
+//jshint esversion:6
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -82,7 +83,7 @@ app.post("/", function(req, res) {
       foundList.items.push(item);
       foundList.save();
       res.redirect("/" + listName);
-    })
+    });
   }
 
 });
@@ -113,7 +114,7 @@ app.post("/delete", function(req, res) {
       }
     });
   }
-})
+});
 
 app.get("/:customListName", function(req, res) {
   const customListName = _.capitalize(req.params.customListName);
@@ -135,14 +136,18 @@ app.get("/:customListName", function(req, res) {
           listTitle: foundList.name,
           newListItems: foundList.items
         });
-      };
-    };
+      }
+    }
   });
-})
+});
 app.get("/about", function(req, res) {
   res.render('about');
-})
+});
+let port = process.env.PORT;
+if(port == null || port == ""){
+  port = 3000;
+}
 
-app.listen(3000, function() {
+app.listen(port, function() {
   console.log("Server started on port 3000");
-})
+});
