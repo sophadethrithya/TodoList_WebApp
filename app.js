@@ -37,13 +37,20 @@ const listSchema = new mongoose.Schema({
   name: String,
   items: [itemSchema]
 });
-
+let existingLists;
 const List = mongoose.model("List", listSchema);
 
 const items = [];
 const workItems = [];
 app.get("/", function(req, res) {
-  // var day = date.getDate();
+
+  List.find({},function(err,allLists){
+    if(!err)
+    {
+      existingLists = allLists;
+    }
+
+  });
   Item.find({}, function(err, foundItems) {
 
     if (foundItems.length === 0) {
@@ -58,7 +65,8 @@ app.get("/", function(req, res) {
     } else {
       res.render('list', {
         listTitle: "Today",
-        newListItems: foundItems
+        newListItems: foundItems,
+        existingLists: existingLists
       });
     }
 
@@ -116,8 +124,22 @@ app.post("/delete", function(req, res) {
   }
 });
 
+app.post("/deleteList",function(req,res){
+  const listName = req.body.list;
+  List.deleteOne({name: listName},function(err){
+    if(err)
+      console.log(err);
+  });
+  res.redirect("/");
+});
 app.get("/:customListName", function(req, res) {
   const customListName = _.capitalize(req.params.customListName);
+  List.find({},function(err,allLists){
+    if(!err)
+    {
+      existingLists = allLists;
+    }
+  });
   List.findOne({
     name: customListName
   }, function(err, foundList) {
@@ -134,7 +156,8 @@ app.get("/:customListName", function(req, res) {
         //Show an existing list
         res.render('list', {
           listTitle: foundList.name,
-          newListItems: foundList.items
+          newListItems: foundList.items,
+          existingLists: existingLists
         });
       }
     }
@@ -143,6 +166,11 @@ app.get("/:customListName", function(req, res) {
 app.get("/about", function(req, res) {
   res.render('about');
 });
+
+app.post("/add",function(req,res){
+  res.redirect("/"+req.body.newList);
+});
+
 let port = process.env.PORT;
 if(port == null || port == ""){
   port = 3000;
